@@ -1,7 +1,15 @@
 const { Metadata, TraceabilityMetadata, Certificate } = require("./certificate");
-const { createCertificate, verifyCertificate } = require("./hederaService");
+const { createCertificate, verifyCertificate, createToken, mintToken } = require("./hederaService");
 
 (async () => {
+    console.log("Creating Radica Token on HTS...");
+
+    const tokenId = await createToken();
+    console.log(`Token created with tokenId: ${tokenId}`);
+
+    const recoveredAddress = "0.0.12347"; // Example recovered address, implement your recovery logic
+    console.log(`Address recovered from tag: ${recoveredAddress}`);
+
     const metadata = new Metadata(
         "12345",
         "Product Certificate",
@@ -10,8 +18,6 @@ const { createCertificate, verifyCertificate } = require("./hederaService");
         "Manufacturer A",
         "https://example.com"
     );
-    console.log("Using Account ID:", process.env.ACCOUNT_ID);
-    console.log("Using Private Key:", process.env.PRIVATE_KEY);
 
     const traceabilityMetadata = new TraceabilityMetadata(
         "batch-001",
@@ -19,9 +25,16 @@ const { createCertificate, verifyCertificate } = require("./hederaService");
     );
 
     const certificate = new Certificate(1, metadata, traceabilityMetadata);
+    console.log("Creating certificate:", JSON.stringify(certificate));
 
-    const fileId = await createCertificate("0x1234567890abcdef", certificate);
+    console.log("\nSafing certificate to File Service...");
+    const fileId = await createCertificate(recoveredAddress, certificate);
+    console.log(`\nCertificate saved with fileId: ${fileId}`);
 
-    const verifiedCertificate = await verifyCertificate(fileId);
-    console.log("Verified Certificate:", verifiedCertificate);
+    console.log(`\nMinting token with metadata ${fileId} and assigning it to accountId: ${recoveredAddress}`);
+    const nftSerial = await mintToken(tokenId, fileId, recoveredAddress);
+    console.log(`\nToken created with serial: ${nftSerial}`);
+
+    console.log("\nWriting serial on NFC Tag");
+    //we need to implement the logic
 })();

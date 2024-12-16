@@ -25,4 +25,3 @@ class Certificate {
 }
 
 module.exports = { Metadata, TraceabilityMetadata, Certificate };
-
