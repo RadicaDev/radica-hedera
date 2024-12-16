@@ -7,15 +7,31 @@ const {
   TokenMintTransaction,
   TokenType,
   TokenSupplyType,
-  Hbar,
+  AccountCreateTransaction,
+  NftId,
+  TokenNftInfoQuery,
 } = require("@hashgraph/sdk");
 require("dotenv").config();
 
 const client = Client.forTestnet();
 client.setOperator(
   process.env.ACCOUNT_ID,
-  PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY)
+  PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY),
 );
+
+async function createAccount(publicKey, initialBalance) {
+  try {
+    const res = await new AccountCreateTransaction()
+      .setInitialBalance(initialBalance)
+      .setKey(publicKey)
+      .execute(client);
+    const receipt = await res.getReceipt(client);
+    return receipt.accountId;
+  } catch (error) {
+    console.error("Error creating account:", error);
+    throw error;
+  }
+}
 
 async function createToken() {
   try {
@@ -26,7 +42,7 @@ async function createToken() {
 
       .setTokenSymbol("RDT")
       .setTreasuryAccountId(process.env.ACCOUNT_ID)
-      .setTokenType(TokenType.FungibleCommon)
+      .setTokenType(TokenType.NonFungibleUnique)
       .setSupplyType(TokenSupplyType.Finite)
       .setMaxSupply(2000)
       .setInitialSupply(0)
@@ -58,7 +74,7 @@ async function createCertificate(address, certificate) {
       .freezeWith(client);
 
     const signTx = await transaction.sign(
-      PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY)
+      PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY),
     );
     const submitTx = await signTx.execute(client);
 
@@ -70,34 +86,37 @@ async function createCertificate(address, certificate) {
   }
 }
 
-async function mintToken(tokenId, fileId, accountId) {
+async function mintToken(tokenId, fileId) {
   try {
     const metadata = fileId.toString();
 
     const transaction = new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([Buffer.from(metadata)])
-      .setMaxTransactionFee(new Hbar(20)) // Use when HBAR is under 10 cents
       .freezeWith(client);
     const signTx = await transaction.sign(
-      PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY)
+      PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY),
     );
     const submitTx = await signTx.execute(client);
 
     const receipt = await submitTx.getReceipt(client);
-    console.log("******************Token minted:****************", receipt);
-
-    // Get the serial number from the record, not the receipt
-    const record = await submitTx.getRecord(client);
-    //   const serial = record.serials[0];
-
-    console.log(`Minted NFT with serial: ${record.serials}`);
-    console.log(
-      `Assigning token serial ${record.serials} to accountId: ${accountId}`
-    );
-    return serial;
+    return receipt.serials[0];
   } catch (error) {
     console.error("Error minting token:", error);
+    throw error;
+  }
+}
+
+async function getNftInfo(tokenId, serial) {
+  const nftId = new NftId(tokenId, serial);
+  try {
+    const tokenInfo = await new TokenNftInfoQuery()
+      .setNftId(nftId)
+      .execute(client);
+
+    return tokenInfo[0].metadata.toString();
+  } catch (error) {
+    console.error("Error getting NFT info:", error);
     throw error;
   }
 }
@@ -117,8 +136,10 @@ async function verifyCertificate(fileId) {
 }
 
 module.exports = {
+  createAccount,
   createCertificate,
   verifyCertificate,
   createToken,
   mintToken,
+  getNftInfo,
 };

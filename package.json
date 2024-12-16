@@ -4,10 +4,10 @@
     "description": "A service for creating and verifying certificates using Hedera File Service",
     "main": "src/index.js",
     "scripts": {
-      "start": "node src/index.js"
+        "start": "node src/index.js"
     },
-  "dependencies": {
-    "@hashgraph/sdk": "^2.55.1",
-    "dotenv": "^16.4.7"
-  }
+    "dependencies": {
+        "@hashgraph/sdk": "^2.55.1",
+        "dotenv": "^16.4.7"
+    }
 }
