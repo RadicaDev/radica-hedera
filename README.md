@@ -1,81 +1,119 @@
-# Decentralized Certification and Traceability System
+# Radica implementation using Hedera Hashgraph Native Services (unit demo)
 
 ## Overview
+
 This project leverages **Hedera Hashgraph** to build a decentralized system for managing product certificates and traceability. It uses the **Hedera File Service (HFS)** for certificate storage and the **Hedera Token Service (HTS)** for tokenizing certificates as NFTs. The system ensures transparency, security, and scalability, providing tamper-proof verification of product authenticity.
 
 ## Features
-- **Certificate Management**: Create and store detailed certificates with metadata (e.g., serial number, description, batch ID).
-- **Tokenization**: Mint unique NFTs associated with certificates and assign ownership to specific accounts.
-- **Verification**: Verify certificates and linked tokens, ensuring product authenticity and traceability.
-- **Decentralization**: Leverage Hedera's distributed ledger for immutable records and secure transactions.
 
-## Technology Stack
-- **Backend**: Node.js
-- **Blockchain**: Hedera Hashgraph
-  - **Hedera File Service (HFS)**: For certificate storage.
-  - **Hedera Token Service (HTS)**: For minting and managing NFTs.
-- **Environment Configuration**: dotenv
+This is just an example script to demonstrate how the Radica System can be implemented using Hedera Hashgraph Native Services.
 
-## Packages to Install
-Install the following npm packages to set up the project:
+The script will:
+
+1. Create a token on HTS.
+2. Generate and upload a certificate to HFS.
+3. Mint a token associated with the certificate.
+4. Verify the just created product.
+
+## Getting Started
+
+### Requirements
+
+- nodejs
+- Hedera Hashgraph testnet account
+
+### Install Dependencies
+
+run the following command to install the required dependencies:
 
 ```bash
-npm install @hashgraph/sdk dotenv
+npm install
 ```
 
-### Package Details
-- **@hashgraph/sdk**: Provides the SDK for interacting with Hedera services.
-- **dotenv**: Allows secure management of environment variables.
+### Configure Environment Variables
 
-## How to Run the Project
+Create a `.env` file in the project root and configure it with the following details:
 
-### Prerequisites
-1. **Node.js**: Install the latest version of Node.js from [here](https://nodejs.org/).
-2. **Hedera Testnet Account**: Set up an account on the Hedera Testnet (or Mainnet for production).
-3. **Environment Variables**: Create a `.env` file in the project root and configure it with the following details:
+```env
+cp .env.example .env
+```
+
+Update the `.env` file with your Hedera account ID and private key.
 
 ```env
 ACCOUNT_ID=your-hedera-account-id
 PRIVATE_KEY=your-hedera-private-key
 ```
 
-### Steps to Run
-1. **Clone the Repository**:
-   ```bash
-   git clone <repository-url>
-   cd <repository-name>
-   ```
+### Run the Project
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+run the following command to start the project:
 
-3. **Run the Project**:
-   ```bash
-   node src/index.js
-   ```
-
-### Expected Output
-- The script will:
-  1. Create a token on HTS.
-  2. Generate and upload a certificate to HFS.
-  3. Mint a token associated with the certificate.
-  4. Assign the token to a specified account.
-  5. Log all operations to the console.
-
-## Example Output
-```plaintext
-Creating Radica Token on HTS...
-Token created with tokenId: 0.0.XXXXXXX
-Address recovered from tag: 0.0.12345
-Creating certificate: {...certificate}
-Saving certificate to File Service...
-Certificate saved with fileId: 0.0.XXXXXXX
-Minting token with metadata 0.0.XXXXXXX and assigning it to accountId: 0.0.12345
-Token created with serial: 1
-Writing serial on NFC Tag
+```bash
+node src/index.js
 ```
 
-## License
-This project is licensed under the MIT License.
+### Expected Output
+
+```plaintext
+********** Creating Radica Token on HTS **********
+Token created with tokenId: 0.0.5281388
+
+********** Creating Certificate **********
+Recovered address from tag: 0x9cc98b297731f97644865becc12851aa7ffeb11a
+Account created with accountId: 0.0.5281389
+Creating certificate: {
+  "id": "895097132751182793199175099238535307862304796954",
+  "metadata": {
+    "serialNumber": "12345",
+    "name": "Product Certificate",
+    "description": "This is a product certificate",
+    "image": "https://example.com/image.png",
+    "manufacturer": "Manufacturer A",
+    "externalUrl": "https://example.com"
+  },
+  "traceabilityMetadata": {
+    "batchId": "batch-001",
+    "supplierChainHash": "hash1234567890"
+  }
+}
+
+Saving certificate to File Service...
+
+Certificate saved with fileId: 0.0.5281390
+
+********** Minting token **********
+Token created with serial: 1
+Writing serial on NFC Tag
+
+
+********** Verifying Certificate **********
+Recovered address from tag: 0x9cc98b297731f97644865becc12851aa7ffeb11a
+Read serial from NFC Tag: 1
+Retrieving token metadata...
+Token metadata: 0.0.5281390
+Verifying certificate with fileId 0.0.5281390
+Certificate Retrieved: {
+  "address": "9cc98b297731f97644865becc12851aa7ffeb11a",
+  "certificate": {
+    "id": "895097132751182793199175099238535307862304796954",
+    "metadata": {
+      "serialNumber": "12345",
+      "name": "Product Certificate",
+      "description": "This is a product certificate",
+      "image": "https://example.com/image.png",
+      "manufacturer": "Manufacturer A",
+      "externalUrl": "https://example.com"
+    },
+    "traceabilityMetadata": {
+      "batchId": "batch-001",
+      "supplierChainHash": "hash1234567890"
+    }
+  }
+}
+
+
+******************************************
+********** Certificate Verified **********
+******************************************
+```
